@@ -2,25 +2,25 @@
 <template>
   <v-row class="fill-height">
     <v-col>
-      <v-sheet height="64">
+      <v-sheet>
         <v-toolbar flat>
           <v-btn color="primary" dark @click.stop="dialog = true">
             New Event
           </v-btn>
-          <v-btn outlined class="mr-4" @click="setToday"> Today </v-btn>
+          <v-btn outlined class="mx-4" @click="setToday"> Today </v-btn>
           <v-btn fab text small @click="prev">
             <v-icon small> mdi-chevron-left </v-icon>
           </v-btn>
           <v-btn fab text small @click="next" class="mr-4">
             <v-icon small> mdi-chevron-right </v-icon>
           </v-btn>
-          <v-toolbar-title v-if="$refs.calendar">{{
-            $refs.calendar.title
-          }}</v-toolbar-title>
+          <v-toolbar-title v-if="$refs.calendar">
+            {{ $refs.calendar.title }}
+          </v-toolbar-title>
           <v-spacer />
           <v-menu bottom right>
             <template v-slot:activator="{ on }">
-              <v-btn outlined v-on="on">
+              <v-btn color="primary" v-on="on">
                 <span>{{ typeToLabel[type] }}</span>
                 <v-icon right> mdi-menu-down </v-icon>
               </v-btn>
@@ -96,7 +96,7 @@
           :type="type"
           @click:event="showEvent"
           @click:more="viewDay"
-          @click:date="viewDay"
+          @click:date="setDialogDate"
           @change="updateRange"
         />
         <v-menu
@@ -164,6 +164,7 @@ export default {
     name: null,
     details: null,
     start: null,
+    startDate: null,
     end: null,
     color: "#1976D2",
     currentlyEditing: null,
@@ -176,14 +177,6 @@ export default {
   }),
   mounted() {
     this.getEvents();
-  },
-  computed: {
-    monthFormatter() {
-      return this.$refs.calendar.getFormatter({
-        timeZone: "UTC",
-        month: "long",
-      });
-    },
   },
   methods: {
     async getEvents() {
@@ -199,6 +192,8 @@ export default {
     setDialogDate({ date }) {
       this.dialogDate = true;
       this.focus = date;
+      this.start = date;
+      this.end = this.start;
     },
     viewDay({ date }) {
       this.focus = date;
@@ -236,7 +231,6 @@ export default {
       }
     },
     editEvent(ev) {
-      console.log(ev, "oi");
       this.currentlyEditing = ev.id;
     },
     async updateEvent(ev) {
@@ -253,13 +247,11 @@ export default {
       const open = () => {
         this.selectedEvent = event;
         this.selectedElement = nativeEvent.target;
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => (this.selectedOpen = true))
-        );
+        setTimeout(() => (this.selectedOpen = true), 10);
       };
       if (this.selectedOpen) {
         this.selectedOpen = false;
-        requestAnimationFrame(() => requestAnimationFrame(() => open()));
+        setTimeout(() => (this.selectedOpen = true), 10);
       } else {
         open();
       }
@@ -268,11 +260,6 @@ export default {
     updateRange({ start, end }) {
       this.start = start;
       this.end = end;
-    },
-    nth(d) {
-      return d > 3 && d < 21
-        ? "th"
-        : ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][d % 10];
     },
   },
 };
